@@ -1,6 +1,7 @@
-import React, { Component } from 'react';
+import React from 'react';
+import Form from './shared/form';
 
-class MovieForm extends Component {
+class MovieForm extends Form {
 
     onSubmit = () => {
         this.props.history.replace('/movies');

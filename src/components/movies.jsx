@@ -67,6 +67,10 @@ class Movies extends Component {
     this.setState({ currentPage: page });
   }
 
+  newMovieClickHandler = () => {
+    this.props.history.push('/movies/new');
+  }
+
   renderMovies = () => {
 
     const { currentPage, pageSize } = this.state;
@@ -87,6 +91,7 @@ class Movies extends Component {
             />
           </section>
           <main className="col">
+            <div><button onClick={this.newMovieClickHandler} className="btn btn-primary mb-3">New Movie</button></div>
             <p className="lead">Showing {totalCount} elements from the database.</p>
             <MoviesTable
               sortColumn={sortColumn}
