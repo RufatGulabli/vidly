@@ -7,7 +7,7 @@ const Like = (props) => {
     if (!props.like) {
         classes += '-o';
     }
-    return <FontAwesome style={{ cursor: 'pointer' }} name={classes} onClick={props.onClick} />;
+    return <FontAwesome style={{ cursor: 'pointer' }} name={classes} onClick={props.onLike} />;
 }
 
 Like.propTypes = {

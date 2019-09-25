@@ -1,8 +1,9 @@
 import * as genresAPI from "./fakeGenreService";
+import _ from 'lodash';
 
-const movies = [
+let movies = [
   {
-    _id: "5b21ca3eeb7f6fbccd471815",
+    _id: "9y21ca3zeb7f6fbccd471815",
     title: "Terminator",
     genre: { _id: "5b21ca3eeb7f6fbccd471818", name: "Action" },
     numberInStock: 6,
@@ -11,11 +12,12 @@ const movies = [
     like: true
   },
   {
-    _id: "5b21ca3eeb7f6fbccd471816",
+    _id: "5b20ct1egb7f6fb23d471916",
     title: "Die Hard",
     genre: { _id: "5b21ca3eeb7f6fbccd471818", name: "Action" },
     numberInStock: 5,
     dailyRentalRate: 2.5,
+    publishDate: "2018-01-03T19:04:28.809Z",
     like: false
   },
   {
@@ -24,14 +26,16 @@ const movies = [
     genre: { _id: "5b21ca3eeb7f6fbccd471820", name: "Thriller" },
     numberInStock: 8,
     dailyRentalRate: 3.5,
+    publishDate: "2018-01-03T19:04:28.809Z",
     like: false
   },
   {
-    _id: "5b21ca3eeb7f6fbccd471819",
+    _id: "5b20qw3tyb7f6fbmjd471899",
     title: "Trip to Italy",
     genre: { _id: "5b21ca3eeb7f6fbccd471814", name: "Comedy" },
     numberInStock: 7,
     dailyRentalRate: 3.5,
+    publishDate: "2018-01-03T19:04:28.809Z",
     like: false
   },
   {
@@ -40,14 +44,16 @@ const movies = [
     genre: { _id: "5b21ca3eeb7f6fbccd471814", name: "Comedy" },
     numberInStock: 7,
     dailyRentalRate: 3.5,
+    publishDate: "2018-01-03T19:04:28.809Z",
     like: false
   },
   {
-    _id: "5b21ca3eeb7f6fbccd47181b",
+    _id: "tb21ca3lob7f6fbhhd47181b",
     title: "Wedding Crashers",
     genre: { _id: "5b21ca3eeb7f6fbccd471814", name: "Comedy" },
     numberInStock: 7,
     dailyRentalRate: 3.5,
+    publishDate: "2018-01-03T19:04:28.809Z",
     like: false
   },
   {
@@ -56,14 +62,16 @@ const movies = [
     genre: { _id: "5b21ca3eeb7f6fbccd471820", name: "Thriller" },
     numberInStock: 7,
     dailyRentalRate: 4.5,
+    publishDate: "2018-01-03T19:04:28.809Z",
     like: false
   },
   {
-    _id: "5b21ca3eeb7f6fbccd47181f",
+    _id: "6b21ca3otb7f6fbccd47181f",
     title: "The Sixth Sense",
     genre: { _id: "5b21ca3eeb7f6fbccd471820", name: "Thriller" },
     numberInStock: 4,
     dailyRentalRate: 3.5,
+    publishDate: "2018-01-03T19:04:28.809Z",
     like: false
   },
   {
@@ -72,10 +80,11 @@ const movies = [
     genre: { _id: "5b21ca3eeb7f6fbccd471818", name: "Action" },
     numberInStock: 7,
     dailyRentalRate: 3.5,
+    publishDate: "2018-01-03T19:04:28.809Z",
     like: false
   },
   {
-    _id: "5b21ca3eeb7f6fbccd47f815",
+    _id: "51b22cb3eeb1h6fb2cd471815",
     title: "Promotheus",
     genre: { _id: "5b21ca3eeb7f6fbccd471821", name: "Science Fiction" },
     numberInStock: 8,
@@ -89,14 +98,16 @@ const movies = [
     genre: { _id: "5b21ca3eeb7f6fbccd471818", name: "Action" },
     numberInStock: 2,
     dailyRentalRate: 3.5,
+    publishDate: "2018-01-03T19:04:28.809Z",
     like: false
   },
   {
-    _id: "5b21ca3eub7f6fbccd471817",
+    _id: "5b20ca3eub7d6fb0cd471817",
     title: "Runner",
     genre: { _id: "5b21ca3eeb7f6fbccd471821", name: "Science Fiction" },
     numberInStock: 3,
     dailyRentalRate: 1.5,
+    publishDate: "2018-01-03T19:04:28.809Z",
     like: false
   },
   {
@@ -105,14 +116,16 @@ const movies = [
     genre: { _id: "5b21ca3eeb7f6fbccd471821", name: "Science Fiction" },
     numberInStock: 7,
     dailyRentalRate: 2.0,
+    publishDate: "2018-01-03T19:04:28.809Z",
     like: false
   },
   {
-    _id: "5b22ca3eeb7f6fbccd47181a",
+    _id: "1b22ca30eb7f6fbcgd43181a",
     title: "Mrs. Daughfawer",
     genre: { _id: "5b21ca3eeb7f6fbccd471814", name: "Comedy" },
     numberInStock: 10,
     dailyRentalRate: 3.5,
+    publishDate: "2018-01-03T19:04:28.809Z",
     like: true
   },
   {
@@ -121,6 +134,7 @@ const movies = [
     genre: { _id: "5b21ca3eeb7f6fbccd471825", name: "War" },
     numberInStock: 15,
     dailyRentalRate: 7.0,
+    publishDate: "2018-01-03T19:04:28.809Z",
     like: false
   },
   {
@@ -129,6 +143,7 @@ const movies = [
     genre: { _id: "5b21ca3eeb7f6fbccd471814", name: "Comedy" },
     numberInStock: 1,
     dailyRentalRate: 9.0,
+    publishDate: "2018-01-03T19:04:28.809Z",
     like: false
   },
   {
@@ -137,6 +152,7 @@ const movies = [
     genre: { _id: "5b21ca3eeb7f6fbccd471821", name: "Science Fiction" },
     numberInStock: 9,
     dailyRentalRate: 4.5,
+    publishDate: "2018-01-03T19:04:28.809Z",
     like: false
   },
   {
@@ -145,6 +161,7 @@ const movies = [
     genre: { _id: "5b21ca3eeb7f6fbccd471818", name: "Action" },
     numberInStock: 2,
     dailyRentalRate: 7.0,
+    publishDate: "2018-01-03T19:04:28.809Z",
     like: false
   }
 ];
@@ -159,16 +176,19 @@ export function getMovie(id) {
 
 export function saveMovie(movie) {
   let movieInDb = movies.find(m => m._id === movie._id) || {};
-  movieInDb.name = movie.name;
-  movieInDb.genre = genresAPI.genres.find(g => g._id === movie.genreId);
+  const moviesCopy = _.cloneDeep(movies);
+  const updatedMovies = moviesCopy.filter(m => m._id !== movie._id);
+  movieInDb.title = movie.title;
+  movieInDb.genre = genresAPI.genres.find(g => g._id === movie.genre._id);
   movieInDb.numberInStock = movie.numberInStock;
   movieInDb.dailyRentalRate = movie.dailyRentalRate;
-
-  if (!movieInDb._id) {
-    movieInDb._id = Date.now();
-    movies.push(movieInDb);
+  movieInDb.like = false;
+  if (!movie._id) {
+    movieInDb._id = new Date().toString();
+    movieInDb.publishDate = Date.now();
   }
-
+  updatedMovies.push(movieInDb);
+  movies = updatedMovies;
   return movieInDb;
 }
 

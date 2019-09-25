@@ -9,3 +9,8 @@ export const genres = [
 export function getGenres() {
   return genres.filter(g => g);
 }
+
+export function getGenreById(id) {
+  return genres.find(genre => genre._id === id);
+}
+

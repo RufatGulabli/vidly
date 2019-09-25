@@ -1,24 +1,27 @@
 import React, { Component } from "react";
-import { getMovies } from "../services/fakeMovieService";
+import { getMovies, deleteMovie } from "../services/fakeMovieService";
 import Paginator from "./shared/paginator";
 import { pagination } from '../utils/pagination';
 import MoviesTable from "./moviesTable";
 import SideBar from './shared/sidebar';
 import { getGenres } from '../services/fakeGenreService';
 import _ from 'lodash';
+import SearchBox from "./searchbox";
 
 class Movies extends Component {
   state = {
     movies: [],
+    filteredMovies: [],
     sortColumn: { path: 'title', order: 'asc' },
     categories: [],
     selectedCategory: '0',
     currentPage: 1,
-    pageSize: 6
+    pageSize: 6,
+    searchQuery: ''
   };
 
   componentDidMount() {
-    this.setState({ movies: getMovies(), categories: getGenres() })
+    this.setState({ movies: getMovies(), categories: getGenres(), filteredMovies: getMovies() })
   }
 
   render() {
@@ -26,41 +29,46 @@ class Movies extends Component {
   }
 
   heartClickHandler = movie => {
+    console.log(movie);
     const movies = [...this.state.movies];
     const index = movies.indexOf(movie);
     movies[index] = { ...movies[index] };
     movies[index].like = !movies[index].like;
-    this.setState({ movies });
+    this.setState({ movies, filteredMovies: movies });
   }
 
   deleteMovie = id => {
     this.setState({
       movies: this.state.movies.filter(item => item._id !== id)
     });
+    deleteMovie(id);
   };
 
   getMoviesByCategory = categoryId => {
     return categoryId === '0' ?
-      this.state.movies :
-      this.state.movies.filter(movie => movie.genre._id === categoryId);
+      this.state.filteredMovies :
+      this.state.filteredMovies.filter(movie => movie.genre._id === categoryId);
+  }
+
+  getPagedData = () => {
+    const { selectedCategory, currentPage, pageSize, sortColumn } = this.state;
+    const moviesByCategory = this.getMoviesByCategory(selectedCategory);
+    const sortedMovies = _.orderBy(moviesByCategory, [sortColumn.path], [sortColumn.order]);
+    const pagedData = pagination(sortedMovies, currentPage, pageSize);
+    return { totalCount: moviesByCategory.length, data: pagedData };
+  }
+
+  onSearch = value => {
+    const filteredMovies = this.state.movies.filter(movie => movie.title.toLowerCase().includes(value.toLowerCase()));
+    this.setState({ filteredMovies, selectedCategory: '0', search: value, currentPage: 1 });
   }
 
   sortHandler = sortColumn => {
     this.setState({ sortColumn });
   }
 
-  getPagedData = () => {
-    const { selectedCategory, currentPage, pageSize } = this.state;
-    const { sortColumn } = this.state;
-    const moviesByCategory = this.getMoviesByCategory(selectedCategory);
-    const sortedMovies = _.orderBy(moviesByCategory, [sortColumn.path], [sortColumn.order]);
-    const filteredMovies = pagination(sortedMovies, currentPage, pageSize);
-    return { totalCount: moviesByCategory.length, data: filteredMovies };
-  }
-
-
   categoryClickHandler = categoryID => {
-    this.setState({ selectedCategory: categoryID, currentPage: 1 });
+    this.setState({ selectedCategory: categoryID, currentPage: 1, search: '', filteredMovies: this.state.movies });
   }
 
   changePageHandler = page => {
@@ -73,12 +81,8 @@ class Movies extends Component {
 
   renderMovies = () => {
 
-    const { currentPage, pageSize } = this.state;
-    const { sortColumn } = this.state;
+    const { currentPage, pageSize, sortColumn, searchQuery: search } = this.state;
     const { totalCount, data } = this.getPagedData();
-
-    if (totalCount === 0)
-      return <p className="lead">There is no any movies in the database</p>;
 
     return (
       <React.Fragment>
@@ -92,7 +96,9 @@ class Movies extends Component {
           </section>
           <main className="col">
             <div><button onClick={this.newMovieClickHandler} className="btn btn-primary mb-3">New Movie</button></div>
+            <SearchBox value={search} onSearch={this.onSearch} placeholder="Search..." />
             <p className="lead">Showing {totalCount} elements from the database.</p>
+            {totalCount === 0 && <p className="lead">There is no any movies in the database</p>}
             <MoviesTable
               sortColumn={sortColumn}
               movies={data}
