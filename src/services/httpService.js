@@ -1,0 +1,19 @@
+import axios from 'axios';
+import { toast } from 'react-toastify';
+
+const instance = axios.create({
+    baseURL: 'http://localhost:8800/api',
+});
+
+instance.interceptors.response.use(resp => resp, error => {
+    const expectedError = error.response
+        && error.response.status >= 400
+        && error.response.status < 500;
+    if (!expectedError) {
+        toast.error('Server Error!');
+        return null;
+    }
+    return Promise.reject(error);
+});
+
+export default instance;

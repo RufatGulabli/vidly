@@ -1,8 +1,9 @@
 import React from 'react';
 import Form from './shared/form';
-import { getMovie, saveMovie } from '../services/fakeMovieService';
-import { getGenres, getGenreById } from '../services/fakeGenreService';
+import { getMovie, saveMovie, editMovie } from '../services/movieService';
+import { getGenres, getGenre } from '../services/genreService';
 import Joi from 'joi-browser';
+import { toast } from "react-toastify";
 
 class MovieForm extends Form {
 
@@ -16,21 +17,28 @@ class MovieForm extends Form {
             numberInStock: 0,
             dailyRentalRate: 0
         },
+        genres: [],
         editForm: false,
         errors: {}
     }
 
-    componentDidMount() {
-        const { history, match } = this.props;
-        if (match.params.id === 'new') {
-            return;
-        }
-        else {
-            const movie = getMovie(match.params.id);
-            if (!movie) {
-                return history.replace('/page-not-found');
+    async componentDidMount() {
+        try {
+            const { history, match } = this.props;
+            const { data: genres } = await getGenres();
+            this.setState({ genres });
+            if (match.params.id === 'new') {
+                return;
             }
-            this.setState({ data: movie, editForm: true });
+            else {
+                const { data: movie } = await getMovie(match.params.id);
+                if (!movie) {
+                    return history.replace('/page-not-found');
+                }
+                this.setState({ data: movie, editForm: true, genres });
+            }
+        } catch (exc) {
+            toast.error(exc.response.data.message);
         }
     }
 
@@ -47,20 +55,26 @@ class MovieForm extends Form {
         like: Joi.optional()
     }
 
-    doSubmit = () => {
-        const movie = { ...this.state.data };
-        const resp = saveMovie(movie);
-        if (!resp) {
-            console.error('Something went wrong');
-            return;
+    doSubmit = async () => {
+        try {
+            const movie = { ...this.state.data };
+            if (this.state.editForm) {
+                await editMovie(movie);
+                toast.success('Successfully Updated.');
+            } else {
+                await saveMovie(movie);
+                toast.success('Successfully Created.');
+            }
+            this.props.history.replace('/movies');
+        } catch (exc) {
+            toast.error(exc.response.data.message);
         }
-        this.props.history.replace('/movies');
     }
 
-    selectChangeHandler = (value) => {
+    selectChangeHandler = async (value) => {
         const data = { ...this.state.data };
-        const selectedGenre = getGenreById(value);
-        if (selectedGenre) {
+        const selectedGenre = this.state.genres.filter(genre => genre._id === value)[0];
+        if (value) {
             data.genre = selectedGenre;
             return this.setState({ data, errors: {} });
         }
@@ -69,12 +83,12 @@ class MovieForm extends Form {
     }
 
     render() {
-        const { data, errors } = this.state;
+        const { data, errors, genres } = this.state;
         return (
             <div className="form">
                 <form onSubmit={this.handleSubmit}>
                     {this.renderInput('title', 'Title')}
-                    {this.renderSelect(getGenres(), 'Genre', data.genre._id, this.selectChangeHandler, '_id', 'name', errors)}
+                    {this.renderSelect(genres, 'Genre', data.genre._id || '', this.selectChangeHandler, '_id', 'name', errors)}
                     {this.renderInput('numberInStock', 'Number In Stock', 'number')}
                     {this.renderInput('dailyRentalRate', 'Rate', 'number')}
                     {this.state.editForm ? this.renderButton('btn btn-primary', 'Edit') : this.renderButton('btn btn-primary', 'Create')}

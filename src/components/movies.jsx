@@ -1,12 +1,13 @@
 import React, { Component } from "react";
-import { getMovies, deleteMovie } from "../services/fakeMovieService";
+import _ from 'lodash';
+import { getGenres } from '../services/genreService';
+import { getMovies, deleteMovie } from "../services/movieService";
 import Paginator from "./shared/paginator";
 import { pagination } from '../utils/pagination';
 import MoviesTable from "./moviesTable";
 import SideBar from './shared/sidebar';
-import { getGenres } from '../services/fakeGenreService';
-import _ from 'lodash';
 import SearchBox from "./searchbox";
+import { toast } from "react-toastify";
 
 class Movies extends Component {
   state = {
@@ -20,8 +21,14 @@ class Movies extends Component {
     searchQuery: ''
   };
 
-  componentDidMount() {
-    this.setState({ movies: getMovies(), categories: getGenres(), filteredMovies: getMovies() })
+  async componentDidMount() {
+    try {
+      const { data: genres } = await getGenres();
+      const { data: movies } = await getMovies();
+      this.setState({ movies, categories: genres, filteredMovies: movies });
+    } catch (err) {
+      toast.error(err.message);
+    }
   }
 
   render() {
@@ -37,11 +44,18 @@ class Movies extends Component {
     this.setState({ movies, filteredMovies: movies });
   }
 
-  deleteMovie = id => {
-    this.setState({
-      movies: this.state.movies.filter(item => item._id !== id)
-    });
-    deleteMovie(id);
+  deleteMovie = async id => {
+    try {
+      console.log(id);
+      await deleteMovie(id);
+      const updateMovies = this.state.movies.filter(item => item._id !== id);
+      this.setState({
+        filteredMovies: updateMovies,
+        movies: updateMovies,
+      });
+    } catch (exc) {
+      toast.error(exc.response.data.message);
+    }
   };
 
   getMoviesByCategory = categoryId => {
