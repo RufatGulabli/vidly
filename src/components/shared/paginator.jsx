@@ -3,7 +3,6 @@ import _ from 'lodash';
 import PropTypes from 'prop-types';
 
 const Paginator = ({ pageSize, count, currentPage, onPageChange }) => {
-
     const pagesCount = count / pageSize;
     if (pagesCount <= 1) return null;
     const pages = _.range(1, pagesCount + 1);

@@ -69,7 +69,7 @@ class Movies extends Component {
     } = this.state;
     let pagedData = movies;
     if (searchQuery) {
-      pagedData = this.state.movies.filter(movie => {
+      pagedData = movies.filter(movie => {
         return movie.title.toLowerCase().includes(searchQuery.toLowerCase())
       });
     } else if (selectedCategory) {
@@ -77,7 +77,7 @@ class Movies extends Component {
     }
     const sortedMovies = _.orderBy(pagedData, [sortColumn.path], [sortColumn.order]);
     pagedData = pagination(sortedMovies, currentPage, pageSize);
-    return { totalCount: pagedData.length, data: pagedData };
+    return { totalCount: sortedMovies.length, data: pagedData };
   }
 
   onSearch = value => {

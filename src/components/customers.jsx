@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import CustomersTable from './customersTable';
 import customerService from '../services/customerService';
 import SearchBox from './searchbox';
+import Paginator from "./shared/paginator";
 import { pagination } from '../utils/pagination';
 import _ from 'lodash';
 import { toast } from 'react-toastify';
@@ -12,7 +13,7 @@ class Customers extends Component {
         customers: [],
         sortColumn: { path: 'name', order: 'asc' },
         currentPage: 1,
-        pageSize: 6,
+        pageSize: 4,
         searchQuery: ''
     }
 
@@ -43,7 +44,7 @@ class Customers extends Component {
         }
         const sortedCustomers = _.orderBy(pagedData, [sortColumn.path], [sortColumn.order]);
         pagedData = pagination(sortedCustomers, currentPage, pageSize);
-        return { data: pagedData };
+        return { totalCount: sortedCustomers.length, data: pagedData };
     }
 
     onSearch = value => {
@@ -63,9 +64,13 @@ class Customers extends Component {
         }
     }
 
+    changePageHandler = page => {
+        this.setState({ currentPage: page });
+    }
+
     render() {
-        const { sortColumn, searchQuery } = this.state;
-        const { data: customers } = this.getPagedData();
+        const { sortColumn, searchQuery, currentPage, pageSize } = this.state;
+        const { data: customers, totalCount } = this.getPagedData();
         return (
             <div className="col">
                 <SearchBox value={searchQuery} onSearch={this.onSearch} placeholder="Search Customer..." />
@@ -75,6 +80,11 @@ class Customers extends Component {
                     onSort={this.sortHandler}
                     onDelete={this.deleteCustomer}
                 />
+                <Paginator
+                    currentPage={currentPage}
+                    onPageChange={this.changePageHandler}
+                    count={totalCount}
+                    pageSize={pageSize} />
             </div>
 
         );
