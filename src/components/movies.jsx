@@ -12,7 +12,6 @@ import { toast } from "react-toastify";
 class Movies extends Component {
   state = {
     movies: [],
-    filteredMovies: [],
     sortColumn: { path: 'title', order: 'asc' },
     categories: [],
     selectedCategory: '0',
@@ -25,7 +24,7 @@ class Movies extends Component {
     try {
       const { data: genres } = await getGenres();
       const { data: movies } = await getMovies();
-      this.setState({ movies, categories: genres, filteredMovies: movies });
+      this.setState({ movies, categories: genres });
     } catch (err) {
       toast.error(err.message);
     }
@@ -36,23 +35,18 @@ class Movies extends Component {
   }
 
   heartClickHandler = movie => {
-    console.log(movie);
     const movies = [...this.state.movies];
     const index = movies.indexOf(movie);
     movies[index] = { ...movies[index] };
     movies[index].like = !movies[index].like;
-    this.setState({ movies, filteredMovies: movies });
+    this.setState({ movies });
   }
 
   deleteMovie = async id => {
     try {
-      console.log(id);
       await deleteMovie(id);
-      const updateMovies = this.state.movies.filter(item => item._id !== id);
-      this.setState({
-        filteredMovies: updateMovies,
-        movies: updateMovies,
-      });
+      const movies = this.state.movies.filter(item => item._id !== id);
+      this.setState({ movies });
     } catch (exc) {
       toast.error(exc.response.data.message);
     }
@@ -60,21 +54,34 @@ class Movies extends Component {
 
   getMoviesByCategory = categoryId => {
     return categoryId === '0' ?
-      this.state.filteredMovies :
-      this.state.filteredMovies.filter(movie => movie.genre._id === categoryId);
+      this.state.movies :
+      this.state.movies.filter(movie => movie.genre._id === categoryId);
   }
 
   getPagedData = () => {
-    const { selectedCategory, currentPage, pageSize, sortColumn } = this.state;
-    const moviesByCategory = this.getMoviesByCategory(selectedCategory);
-    const sortedMovies = _.orderBy(moviesByCategory, [sortColumn.path], [sortColumn.order]);
-    const pagedData = pagination(sortedMovies, currentPage, pageSize);
-    return { totalCount: moviesByCategory.length, data: pagedData };
+    const {
+      selectedCategory,
+      currentPage,
+      pageSize,
+      sortColumn,
+      searchQuery,
+      movies
+    } = this.state;
+    let pagedData = movies;
+    if (searchQuery) {
+      pagedData = this.state.movies.filter(movie => {
+        return movie.title.toLowerCase().includes(searchQuery.toLowerCase())
+      });
+    } else if (selectedCategory) {
+      pagedData = this.getMoviesByCategory(selectedCategory);
+    }
+    const sortedMovies = _.orderBy(pagedData, [sortColumn.path], [sortColumn.order]);
+    pagedData = pagination(sortedMovies, currentPage, pageSize);
+    return { totalCount: pagedData.length, data: pagedData };
   }
 
   onSearch = value => {
-    const filteredMovies = this.state.movies.filter(movie => movie.title.toLowerCase().includes(value.toLowerCase()));
-    this.setState({ filteredMovies, selectedCategory: '0', search: value, currentPage: 1 });
+    this.setState({ selectedCategory: '0', searchQuery: value, currentPage: 1 });
   }
 
   sortHandler = sortColumn => {
@@ -82,7 +89,7 @@ class Movies extends Component {
   }
 
   categoryClickHandler = categoryID => {
-    this.setState({ selectedCategory: categoryID, currentPage: 1, search: '', filteredMovies: this.state.movies });
+    this.setState({ selectedCategory: categoryID, currentPage: 1, searchQuery: '', movies: this.state.movies });
   }
 
   changePageHandler = page => {
@@ -97,7 +104,6 @@ class Movies extends Component {
 
     const { currentPage, pageSize, sortColumn, searchQuery: search } = this.state;
     const { totalCount, data } = this.getPagedData();
-
     return (
       <React.Fragment>
         <div className="row">
@@ -109,7 +115,7 @@ class Movies extends Component {
             />
           </section>
           <main className="col">
-            <div><button onClick={this.newMovieClickHandler} className="btn btn-primary mb-3">New Movie</button></div>
+            {this.props.user && <div><button onClick={this.newMovieClickHandler} className="btn btn-primary mb-3">New Movie</button></div>}
             <SearchBox value={search} onSearch={this.onSearch} placeholder="Search..." />
             <p className="lead">Showing {totalCount} elements from the database.</p>
             {totalCount === 0 && <p className="lead">There is no any movies in the database</p>}

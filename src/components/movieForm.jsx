@@ -1,7 +1,7 @@
 import React from 'react';
 import Form from './shared/form';
 import { getMovie, saveMovie, editMovie } from '../services/movieService';
-import { getGenres, getGenre } from '../services/genreService';
+import { getGenres } from '../services/genreService';
 import Joi from 'joi-browser';
 import { toast } from "react-toastify";
 
@@ -22,24 +22,30 @@ class MovieForm extends Form {
         errors: {}
     }
 
-    async componentDidMount() {
+    async populateGenres() {
         try {
-            const { history, match } = this.props;
             const { data: genres } = await getGenres();
             this.setState({ genres });
-            if (match.params.id === 'new') {
-                return;
-            }
-            else {
-                const { data: movie } = await getMovie(match.params.id);
-                if (!movie) {
-                    return history.replace('/page-not-found');
-                }
-                this.setState({ data: movie, editForm: true, genres });
-            }
+        } catch (exc) { }
+    }
+
+    async populateMovie() {
+        try {
+            const id = this.props.match.params.id;
+            if (id === 'new') return;
+            const { data: movie } = await getMovie(id);
+            this.setState({ data: movie, editForm: true });
         } catch (exc) {
-            toast.error(exc.response.data.message);
+            if (exc.response && exc.response.status === 404) {
+                toast.error(exc.response.data.message);
+                this.props.history.replace('/page-not-found');
+            }
         }
+    }
+
+    async componentDidMount() {
+        await this.populateGenres();
+        await this.populateMovie();
     }
 
     schema = {

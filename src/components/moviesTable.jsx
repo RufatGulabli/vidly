@@ -2,9 +2,11 @@ import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
 import Like from './shared/like';
 import Table from './shared/table';
-
+import loginService from '../services/loginService';
 
 class MoviesTable extends Component {
+
+    isAdmin = loginService.getCurrentUser() && loginService.getCurrentUser().isAdmin;
 
     columns = [
         {
@@ -21,7 +23,11 @@ class MoviesTable extends Component {
         },
         {
             key: 'delete',
-            content: movie => (<button onClick={() => this.props.onDelete(movie._id)} className="btn btn-danger btn-sm">Delete</button>)
+            content: movie => {
+                return this.isAdmin ?
+                    (<button onClick={() => this.props.onDelete(movie._id)} className="btn btn-danger btn-sm">Delete</button>)
+                    : null;
+            }
         }
     ];
 

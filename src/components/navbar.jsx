@@ -2,7 +2,7 @@ import React from 'react';
 import { NavLink, Link } from 'react-router-dom';
 import FontAwesome from 'react-fontawesome';
 
-const Navbar = (props) => {
+const Navbar = ({ user }) => {
     return (
         <nav className="navbar navbar-expand-lg navbar-dark bg-dark w-100">
             <Link className="navbar-brand font-weigh-bold" to="/movies">
@@ -16,18 +16,26 @@ const Navbar = (props) => {
                     <li className="nav-item">
                         <NavLink className="nav-link" to="/movies">Movies</NavLink>
                     </li>
-                    <li className="nav-item">
-                        <NavLink className="nav-link" to="/customers">Customer</NavLink>
-                    </li>
-                    <li className="nav-item">
-                        <NavLink className="nav-link" to="/rentals">Rentals</NavLink>
-                    </li>
-                    <li className="nav-item">
-                        <NavLink className="nav-link" to="/login">Login</NavLink>
-                    </li>
-                    <li className="nav-item">
-                        <NavLink className="nav-link" to="/register">Register</NavLink>
-                    </li>
+                    {(user && user.isAdmin) ?
+                        (<li className="nav-item"><NavLink className="nav-link" to="/customers">Customer</NavLink></li>)
+                        : null
+                    }
+                    {(user && user.isAdmin) ?
+                        (<li className="nav-item"><NavLink className="nav-link" to="/rentals">Rentals</NavLink></li>)
+                        : null
+                    }
+                    {!user &&
+                        (<React.Fragment>
+                            <li className="nav-item"><NavLink className="nav-link" to="/login">Login</NavLink></li>
+                            <li className="nav-item"><NavLink className="nav-link" to="/register">Register</NavLink></li>
+                        </React.Fragment>)
+                    }
+                    {user &&
+                        (<React.Fragment>
+                            <li className="nav-item"><NavLink className="nav-link" to="/profile">{user.name}</NavLink></li>
+                            <li className="nav-item"><NavLink className="nav-link" to="/logout">Logout</NavLink></li>
+                        </React.Fragment>)
+                    }
                 </ul>
             </div>
         </nav>
