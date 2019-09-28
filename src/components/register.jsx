@@ -3,10 +3,12 @@ import Joi from 'joi-browser';
 import Form from './shared/form';
 import { register } from '../services/userService';
 import loginService from '../services/loginService';
+import MySpinner from './shared/spinner';
 
 class RegisterForm extends Form {
     state = {
         data: { email: '', password: '', name: '', phone: '' },
+        loading: false,
         errors: {}
     }
 
@@ -19,6 +21,7 @@ class RegisterForm extends Form {
 
     doSubmit = async () => {
         try {
+            this.setState({ loading: true });
             const resp = await register(this.state.data);
             loginService.loginWithJwt(resp.headers['x-auth-token']);
             window.location = '/';
@@ -44,11 +47,16 @@ class RegisterForm extends Form {
             <div className="form mt-3" style={mainWrapper}>
                 <h2 className='text-center mb-4 text-primary'>Registration</h2>
                 <form onSubmit={this.handleSubmit}>
-                    {this.renderInput('email', 'Email', 'email', true, 'envelope')}
-                    {this.renderInput('password', 'Password', 'password', true, 'key')}
-                    {this.renderInput('name', 'Name', '', true, 'user-circle')}
-                    {this.renderInput('phone', 'Phone', '', true, 'phone-square')}
-                    {this.renderButton('btn btn-primary', 'Submit')}
+                    {this.state.loading ? <MySpinner /> :
+                        <div>
+                            {this.renderInput('email', 'Email', 'email', true, 'envelope')}
+                            {this.renderInput('password', 'Password', 'password', true, 'key')}
+                            {this.renderInput('name', 'Name', '', true, 'user-circle')}
+                            {this.renderInput('phone', 'Phone', '', true, 'phone-square')}
+                            {this.renderButton('btn btn-primary', 'Submit')}
+                        </div>
+                    }
+
                 </form>
             </div>
         );

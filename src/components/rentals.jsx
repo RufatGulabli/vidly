@@ -6,6 +6,7 @@ import { pagination } from '../utils/pagination';
 import rentalService from '../services/rentalService';
 import RentalsTable from './rentalsTable';
 import BootstrapModal from './shared/modal';
+import MySpinner from './shared/spinner';
 import moment from 'moment';
 
 class Rentals extends Component {
@@ -16,6 +17,7 @@ class Rentals extends Component {
         pageSize: 8,
         searchQuery: '',
         showModal: false,
+        loading: false,
         selectedRental: {
             movie: {
                 title: '',
@@ -30,6 +32,7 @@ class Rentals extends Component {
 
     async componentDidMount() {
         try {
+            this.setState({ loading: true });
             const { data } = await rentalService.getRentals();
             const rentals = data.map(rent => {
                 const cloneOfRent = _.cloneDeep(rent);
@@ -38,7 +41,7 @@ class Rentals extends Component {
                 cloneOfRent.dateReturned = moment(cloneOfRent.dateReturned).local().format('DD.MM.YYYY');
                 return cloneOfRent;
             });
-            this.setState({ rentals });
+            this.setState({ rentals, loading: false });
         } catch (exc) { }
     }
 
@@ -99,19 +102,23 @@ class Rentals extends Component {
         }
 
         return (
-            <div className="col mt-3 px-3" style={style}>
+            <div className="col mt-3 px-5" style={style}>
                 <SearchBox value={searchQuery} onSearch={this.onSearch} placeholder="Search Rental by Movie..." />
-                <RentalsTable
-                    sortColumn={sortColumn}
-                    data={rentals}
-                    onSort={this.sortHandler}
-                    showDetails={this.showRentalDetails}
-                />
-                <Paginator
-                    currentPage={currentPage}
-                    onPageChange={this.changePageHandler}
-                    count={totalCount}
-                    pageSize={pageSize} />
+                {this.state.loading ? <MySpinner /> :
+                    <div>
+                        <RentalsTable
+                            sortColumn={sortColumn}
+                            data={rentals}
+                            onSort={this.sortHandler}
+                            showDetails={this.showRentalDetails}
+                        />
+                        <Paginator
+                            currentPage={currentPage}
+                            onPageChange={this.changePageHandler}
+                            count={totalCount}
+                            pageSize={pageSize} />
+                    </div>
+                }
                 <BootstrapModal show={showModal} toggle={this.closeModal} label={selectedRental.movie.title} >
                     <div className="row">
                         <div className="col-4">

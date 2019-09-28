@@ -11,6 +11,7 @@ import { toast } from "react-toastify";
 import { Modal, ModalBody, ModalFooter } from 'reactstrap';
 import loginService from '../services/loginService';
 import rentalService from "../services/rentalService";
+import MySpinner from "./shared/spinner";
 
 class Movies extends Component {
   state = {
@@ -22,15 +23,19 @@ class Movies extends Component {
     pageSize: 7,
     searchQuery: '',
     showModal: false,
+    showDeleteModal: false,
     selectedMovie: {},
-    dateReturned: ''
+    dateReturned: '',
+    loading: false
   };
 
   async componentDidMount() {
     try {
+      this.setState({ loading: true });
       const { data: genres } = await getGenres();
       const { data: movies } = await getMovies();
-      this.setState({ movies, categories: genres });
+      this.setState({ movies, categories: genres, loading: false });
+
     } catch (err) {
       toast.error(err.message);
     }
@@ -40,13 +45,23 @@ class Movies extends Component {
     return <div className="mt-4 w-100" > {this.renderMovies()}</div >
   }
 
-  deleteMovie = async id => {
+  deleteMovie = async () => {
     try {
-      await deleteMovie(id);
+      this.setState({ loading: true });
+      const id = this.state.selectedMovie._id;
+      const resp = await deleteMovie(id);
       const movies = this.state.movies.filter(item => item._id !== id);
       this.setState({ movies });
+      this.closeMovieDeleteModal();
+      if (resp.status === 200) {
+        toast.success(this.state.selectedMovie.title + ' deleted successfully.');
+      }
+      this.setState({ loading: false });
     } catch (exc) {
-      toast.error(exc.response.data.message);
+      if (exc.response && exc.response.data) {
+        toast.error(exc.response.data.message);
+      }
+      this.setState({ loading: false });
     }
   };
 
@@ -117,12 +132,17 @@ class Movies extends Component {
 
   proceedRental = async () => {
     try {
+      this.setState({ loading: true });
+      this.setState(prevState => ({
+        showModal: !prevState.showModal
+      }));
       const rental = {
         customerEmail: loginService.getCurrentUser().email,
         movieId: this.state.selectedMovie._id,
         dateReturned: this.state.dateReturned
       }
       const resp = await rentalService.saveRental(rental);
+      this.setState({ loading: false });
       if (!resp.error) {
         toast.success('Successfully created.');
       }
@@ -130,10 +150,9 @@ class Movies extends Component {
       if (exc.response && exc.response.data) {
         toast.error(exc.response.data.message);
       }
+      this.setState({ loading: false });
     }
-    this.setState(prevState => ({
-      showModal: !prevState.showModal
-    }));
+
   }
 
   getReturnDate = date => {
@@ -143,13 +162,36 @@ class Movies extends Component {
       toast.info('Wrong Date');
       return;
     }
-    console.log(today, selectedDate);
     this.setState({ dateReturned: date });
+  }
+
+  toggleMovieModal = id => {
+    const movie = this.state.movies.filter(m => m._id === id)[0];
+    this.setState({ selectedMovie: movie });
+    this.setState(prevState => ({
+      showDeleteModal: !prevState.showDeleteModal
+    }));
+  }
+
+  closeMovieDeleteModal = () => {
+    this.setState(prevState => ({
+      showDeleteModal: !prevState.showDeleteModal
+    }));
   }
 
   renderMovies = () => {
 
-    const { currentPage, pageSize, sortColumn, searchQuery: search, showModal, selectedMovie, dateReturned } = this.state;
+    const {
+      currentPage,
+      pageSize,
+      sortColumn,
+      searchQuery: search,
+      showModal,
+      selectedMovie,
+      dateReturned,
+      showDeleteModal,
+    } = this.state;
+
     const { totalCount, data } = this.getPagedData();
     return (
       <React.Fragment>
@@ -166,18 +208,23 @@ class Movies extends Component {
             <SearchBox value={search} onSearch={this.onSearch} placeholder="Search..." />
             <p className="lead">Showing {totalCount} elements from the database.</p>
             {totalCount === 0 && <p className="lead">There is no any movies in the database</p>}
-            <MoviesTable
-              sortColumn={sortColumn}
-              movies={data}
-              onRent={this.rentMovie}
-              onDelete={this.deleteMovie}
-              onSort={this.sortHandler}
-            />
-            <Paginator
-              currentPage={currentPage}
-              onPageChange={this.changePageHandler}
-              count={totalCount}
-              pageSize={pageSize} />
+            {this.state.loading ? <MySpinner /> :
+              <div>
+                <MoviesTable
+                  sortColumn={sortColumn}
+                  movies={data}
+                  onRent={this.rentMovie}
+                  onDelete={this.toggleMovieModal}
+                  onSort={this.sortHandler}
+                />
+                <Paginator
+                  currentPage={currentPage}
+                  onPageChange={this.changePageHandler}
+                  count={totalCount}
+                  pageSize={pageSize} />
+              </div>
+            }
+
           </main>
         </div>
         <Modal centered={true} toggle={this.toggleModal} size='md' isOpen={showModal} >
@@ -213,6 +260,15 @@ class Movies extends Component {
           <ModalFooter>
             <button onClick={this.proceedRental} className="btn btn-success btn-sm w-50">Rent</button>
             <button onClick={this.toggleModal} className="btn btn-danger btn-sm w-50">Cancel</button>
+          </ModalFooter>
+        </Modal>
+        <Modal centered={true} toggle={this.closeMovieDeleteModal} size='sm' isOpen={showDeleteModal} >
+          <ModalBody>
+            Are you sure to delete {selectedMovie.title}?
+          </ModalBody>
+          <ModalFooter>
+            <button onClick={this.deleteMovie} className="btn btn-success btn-sm w-50">Delete</button>
+            <button onClick={this.closeMovieDeleteModal} className="btn btn-danger btn-sm w-50">Cancel</button>
           </ModalFooter>
         </Modal>
       </React.Fragment>

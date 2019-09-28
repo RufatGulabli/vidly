@@ -16,7 +16,7 @@ const Input = ({ name, label, error, inputGroup, iconName, ...rest }) => {
                 <div className="input-group">
                     <div className="input-group-prepend">
                         <span className="input-group-text" id="basic-addon1">
-                            <FontAwesome name={iconName} size='1x' />
+                            <FontAwesome name={iconName} />
                         </span>
                     </div>
                     <input {...rest} name={name} className="form-control" />
@@ -26,7 +26,6 @@ const Input = ({ name, label, error, inputGroup, iconName, ...rest }) => {
 
 
     }
-    console.log(input);
     return (input);
 }
 

@@ -5,7 +5,7 @@ import PropTypes from 'prop-types';
 const Rent = (props) => {
     return (
         <div style={{ cursor: 'pointer' }}>
-            <FontAwesome style={{ cursor: 'pointer' }} name="film" size="2x" onClick={props.onRent} />
+            <FontAwesome style={{ cursor: 'pointer' }} name="cart-plus" className="text-info" size="2x" onClick={props.onRent} />
         </div>)
 }
 

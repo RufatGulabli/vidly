@@ -4,6 +4,7 @@ import { getMovie, saveMovie, editMovie } from '../services/movieService';
 import { getGenres } from '../services/genreService';
 import Joi from 'joi-browser';
 import { toast } from "react-toastify";
+import MySpinner from './shared/spinner';
 
 class MovieForm extends Form {
 
@@ -20,13 +21,16 @@ class MovieForm extends Form {
         },
         genres: [],
         editForm: false,
+        loading: false,
         errors: {}
     }
 
     async populateGenres() {
         try {
+
             const { data: genres } = await getGenres();
             this.setState({ genres });
+
         } catch (exc) { }
     }
 
@@ -45,8 +49,10 @@ class MovieForm extends Form {
     }
 
     async componentDidMount() {
+        this.setState({ loading: true });
         await this.populateGenres();
         await this.populateMovie();
+        this.setState({ loading: false });
     }
 
     schema = {
@@ -65,6 +71,7 @@ class MovieForm extends Form {
 
     doSubmit = async () => {
         try {
+            this.setState({ loading: true });
             const movie = { ...this.state.data };
             if (this.state.editForm) {
                 await editMovie(movie);
@@ -96,15 +103,25 @@ class MovieForm extends Form {
 
     render() {
         const { data, errors, genres } = this.state;
+        const mainWrapper = {
+            width: '550px',
+            boxShadow: '1px 1px 7px #ccc',
+            padding: '30px',
+            borderRadius: '6px',
+            backgroundColor: 'white'
+        }
         return (
-            <div className="form">
+            <div className="form" style={mainWrapper}>
                 <form onSubmit={this.handleSubmit}>
-                    {this.renderInput('title', 'Title')}
-                    {this.renderSelect(genres, 'Genre', data.genre._id || '', this.selectChangeHandler, '_id', 'name', errors)}
-                    {this.renderInput('numberInStock', 'Number In Stock', 'number')}
-                    {this.renderInput('dailyRentalRate', 'Rate', 'number')}
-                    {this.renderInput('imageUrl', 'Image URL')}
-                    {this.state.editForm ? this.renderButton('btn btn-primary', 'Edit') : this.renderButton('btn btn-primary', 'Create')}
+                    {this.state.loading ? <MySpinner /> :
+                        <div>
+                            {this.renderInput('title', 'Title')}
+                            {this.renderSelect(genres, 'Genre', data.genre._id || '', this.selectChangeHandler, '_id', 'name', errors)}
+                            {this.renderInput('numberInStock', 'Number In Stock', 'number')}
+                            {this.renderInput('dailyRentalRate', 'Rate', 'number')}
+                            {this.renderInput('imageUrl', 'Image URL')}
+                            {this.state.editForm ? this.renderButton('btn btn-primary', 'Edit') : this.renderButton('btn btn-primary', 'Create')}
+                        </div>}
                 </form>
             </div>
         );

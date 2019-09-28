@@ -7,6 +7,8 @@ import SearchBox from './searchbox';
 import Paginator from "./shared/paginator";
 import { pagination } from '../utils/pagination';
 import { toast } from 'react-toastify';
+import MySpinner from './shared/spinner';
+
 class Customers extends Component {
 
     state = {
@@ -16,13 +18,15 @@ class Customers extends Component {
         pageSize: 8,
         searchQuery: '',
         showModal: false,
-        selectedCustomer: {}
+        selectedCustomer: {},
+        loading: false
     }
 
     async componentDidMount() {
         try {
+            this.setState({ loading: true });
             const { data: customers } = await customerService.getCustomers();
-            this.setState({ customers });
+            this.setState({ customers, loading: false });
         } catch (exc) { }
     }
 
@@ -96,6 +100,21 @@ class Customers extends Component {
         }
         return (
             <div className="col mt-3 px-5" style={style}>
+                <SearchBox value={searchQuery} onSearch={this.onSearch} placeholder="Search Customer..." />
+                {this.state.loading ? <MySpinner /> :
+                    <div>
+                        <CustomersTable
+                            sortColumn={sortColumn}
+                            data={customers}
+                            onSort={this.sortHandler}
+                            onDelete={this.setSelectedCustomer}
+                        />
+                        <Paginator
+                            currentPage={currentPage}
+                            onPageChange={this.changePageHandler}
+                            count={totalCount}
+                            pageSize={pageSize} />
+                    </div>}
                 <Modal centered={true} toggle={this.toggleModal} size='sm' isOpen={showModal} >
                     <ModalBody>
                         Are you sure to delete {selectedCustomer.name}?
@@ -105,18 +124,6 @@ class Customers extends Component {
                         <button onClick={this.toggleModal} className="btn btn-danger btn-sm w-50">Cancel</button>
                     </ModalFooter>
                 </Modal>
-                <SearchBox value={searchQuery} onSearch={this.onSearch} placeholder="Search Customer..." />
-                <CustomersTable
-                    sortColumn={sortColumn}
-                    data={customers}
-                    onSort={this.sortHandler}
-                    onDelete={this.setSelectedCustomer}
-                />
-                <Paginator
-                    currentPage={currentPage}
-                    onPageChange={this.changePageHandler}
-                    count={totalCount}
-                    pageSize={pageSize} />
             </div>
 
         );
