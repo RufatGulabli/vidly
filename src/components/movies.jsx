@@ -8,6 +8,9 @@ import MoviesTable from "./moviesTable";
 import SideBar from './shared/sidebar';
 import SearchBox from "./searchbox";
 import { toast } from "react-toastify";
+import { Modal, ModalBody, ModalFooter } from 'reactstrap';
+import loginService from '../services/loginService';
+import rentalService from "../services/rentalService";
 
 class Movies extends Component {
   state = {
@@ -16,8 +19,11 @@ class Movies extends Component {
     categories: [],
     selectedCategory: '0',
     currentPage: 1,
-    pageSize: 6,
-    searchQuery: ''
+    pageSize: 7,
+    searchQuery: '',
+    showModal: false,
+    selectedMovie: {},
+    dateReturned: ''
   };
 
   async componentDidMount() {
@@ -31,15 +37,7 @@ class Movies extends Component {
   }
 
   render() {
-    return <div className="mt-4" > {this.renderMovies()}</div >
-  }
-
-  heartClickHandler = movie => {
-    const movies = [...this.state.movies];
-    const index = movies.indexOf(movie);
-    movies[index] = { ...movies[index] };
-    movies[index].like = !movies[index].like;
-    this.setState({ movies });
+    return <div className="mt-4 w-100" > {this.renderMovies()}</div >
   }
 
   deleteMovie = async id => {
@@ -100,13 +98,62 @@ class Movies extends Component {
     this.props.history.push('/movies/new');
   }
 
+  toggleModal = () => {
+    this.setState(prevState => ({
+      showModal: !prevState.showModal
+    }));
+  }
+
+  rentMovie = movie => {
+    if (!loginService.getCurrentUser()) {
+      this.props.history.push('/login');
+    }
+    this.setState(prevState => ({
+      showModal: !prevState.showModal
+    }));
+    const m = this.state.movies.filter(m => m._id === movie._id)[0];
+    this.setState({ selectedMovie: m });
+  }
+
+  proceedRental = async () => {
+    try {
+      const rental = {
+        customerEmail: loginService.getCurrentUser().email,
+        movieId: this.state.selectedMovie._id,
+        dateReturned: this.state.dateReturned
+      }
+      const resp = await rentalService.saveRental(rental);
+      if (!resp.error) {
+        toast.success('Successfully created.');
+      }
+    } catch (exc) {
+      if (exc.response && exc.response.data) {
+        toast.error(exc.response.data.message);
+      }
+    }
+    this.setState(prevState => ({
+      showModal: !prevState.showModal
+    }));
+  }
+
+  getReturnDate = date => {
+    const today = new Date().getTime();
+    const selectedDate = new Date(date).getTime();
+    if (selectedDate - today < 60 * 60 * 24) {
+      toast.info('Wrong Date');
+      return;
+    }
+    console.log(today, selectedDate);
+    this.setState({ dateReturned: date });
+  }
+
   renderMovies = () => {
 
-    const { currentPage, pageSize, sortColumn, searchQuery: search } = this.state;
+    const { currentPage, pageSize, sortColumn, searchQuery: search, showModal, selectedMovie, dateReturned } = this.state;
     const { totalCount, data } = this.getPagedData();
     return (
       <React.Fragment>
-        <div className="row">
+        <div className="row w-100">
           <section className="col-3">
             <SideBar
               selectedCategory={this.state.selectedCategory}
@@ -115,14 +162,14 @@ class Movies extends Component {
             />
           </section>
           <main className="col">
-            {this.props.user && <div><button onClick={this.newMovieClickHandler} className="btn btn-primary mb-3">New Movie</button></div>}
+            {(this.props.user && this.props.user.isAdmin) && <div><button onClick={this.newMovieClickHandler} className="btn btn-primary mb-3">New Movie</button></div>}
             <SearchBox value={search} onSearch={this.onSearch} placeholder="Search..." />
             <p className="lead">Showing {totalCount} elements from the database.</p>
             {totalCount === 0 && <p className="lead">There is no any movies in the database</p>}
             <MoviesTable
               sortColumn={sortColumn}
               movies={data}
-              onLike={this.heartClickHandler}
+              onRent={this.rentMovie}
               onDelete={this.deleteMovie}
               onSort={this.sortHandler}
             />
@@ -133,7 +180,41 @@ class Movies extends Component {
               pageSize={pageSize} />
           </main>
         </div>
-
+        <Modal centered={true} toggle={this.toggleModal} size='md' isOpen={showModal} >
+          <ModalBody>
+            <div className="row">
+              <div className="col-4">
+                <img src={selectedMovie.imageUrl} alt="" style={{ width: '150px', height: '220px' }} />
+              </div>
+              <div className="col-8">
+                <div>
+                  <label className="col-4 text-right p-0">Title : </label>
+                  <span className="col-8 text-left">{selectedMovie.title}</span>
+                </div>
+                <div>
+                  <label className="col-4 text-right p-0">Stock : </label>
+                  <span className="col-8 text-left">{selectedMovie.numberInStock}</span>
+                </div>
+                <div>
+                  <label className="col-4 text-right p-0">Rate : </label>
+                  <span className="col-8 text-left">{selectedMovie.dailyRentalRate}</span>
+                </div>
+                <div>
+                  <label className="col-4 text-right p-0">Who Rents : </label>
+                  <span className="col-8 text-left">{(loginService.getCurrentUser() && loginService.getCurrentUser().name) || ''}</span>
+                </div>
+                <div className="mt-3">
+                  <label className="col-4 text-left p-0">Return Date</label>
+                  <input onChange={(e) => this.getReturnDate(e.target.value)} value={dateReturned} type="date" className="form-control w-80" />
+                </div>
+              </div>
+            </div>
+          </ModalBody>
+          <ModalFooter>
+            <button onClick={this.proceedRental} className="btn btn-success btn-sm w-50">Rent</button>
+            <button onClick={this.toggleModal} className="btn btn-danger btn-sm w-50">Cancel</button>
+          </ModalFooter>
+        </Modal>
       </React.Fragment>
     );
   };

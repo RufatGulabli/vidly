@@ -6,14 +6,15 @@ import loginService from '../services/loginService';
 
 class RegisterForm extends Form {
     state = {
-        data: { email: '', password: '', name: '' },
+        data: { email: '', password: '', name: '', phone: '' },
         errors: {}
     }
 
     schema = {
         email: Joi.string().email().required().label('Email'),
         password: Joi.string().required().min(5).label('Password'),
-        name: Joi.string().required().min(3).label('Name')
+        name: Joi.string().required().min(3).trim().label('Name'),
+        phone: Joi.string().required().trim().min(4).max(16).label('Phone')
     }
 
     doSubmit = async () => {
@@ -31,12 +32,22 @@ class RegisterForm extends Form {
     }
 
     render() {
+        const mainWrapper = {
+            width: '550px',
+            boxShadow: '1px 1px 7px #ccc',
+            padding: '30px',
+            borderRadius: '6px',
+            backgroundColor: 'white'
+        }
+
         return (
-            <div className="form">
+            <div className="form mt-3" style={mainWrapper}>
+                <h2 className='text-center mb-4 text-primary'>Registration</h2>
                 <form onSubmit={this.handleSubmit}>
-                    {this.renderInput('email', 'Email', 'email')}
-                    {this.renderInput('password', 'Password', 'password')}
-                    {this.renderInput('name', 'Name')}
+                    {this.renderInput('email', 'Email', 'email', true, 'envelope')}
+                    {this.renderInput('password', 'Password', 'password', true, 'key')}
+                    {this.renderInput('name', 'Name', '', true, 'user-circle')}
+                    {this.renderInput('phone', 'Phone', '', true, 'phone-square')}
                     {this.renderButton('btn btn-primary', 'Submit')}
                 </form>
             </div>

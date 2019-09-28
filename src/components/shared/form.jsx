@@ -51,7 +51,7 @@ class Form extends Component {
         return <button disabled={this.validate()} type="submit" className={btnType}>{label}</button>
     }
 
-    renderInput = (name, label, type = 'text') => {
+    renderInput = (name, label, type = 'text', inputGroup = false, iconName) => {
         const { data, errors } = this.state;
         return (
             <Input
@@ -60,6 +60,8 @@ class Form extends Component {
                 label={label}
                 value={data[name]}
                 onChange={this.changeHandler}
+                inputGroup={inputGroup}
+                iconName={iconName}
                 error={errors[name]} />
         );
     }

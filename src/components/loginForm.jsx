@@ -32,14 +32,27 @@ class LoginForm extends Form {
 
     render() {
         if (loginService.getCurrentUser()) return <Redirect to="/" />
+        const mainWrapper = {
+            width: '550px',
+            boxShadow: '1px 1px 7px #ccc',
+            padding: '30px',
+            borderRadius: '6px',
+            backgroundColor: 'white'
+        }
         return (
-            <div className="form">
+            <div className="form mt-5" style={mainWrapper}>
+                <h2 className='text-center mb-4 text-primary'>Login</h2>
+                <div className="alert alert-info">
+                    <div>To see admin functionality please login with below credentials:</div>
+                    <div>Email: admin@admin.com </div>
+                    <div>Password: admin1</div>
+                </div>
                 <form onSubmit={this.handleSubmit}>
-                    {this.renderInput('email', 'Email', 'email')}
-                    {this.renderInput('password', 'Password', 'password')}
+                    {this.renderInput('email', 'Email', 'email', true, 'envelope')}
+                    {this.renderInput('password', 'Password', 'password', true, 'key')}
                     {this.renderButton('btn btn-primary', 'Submit')}
-                </form>
-            </div>
+                </form >
+            </div >
         );
     }
 }

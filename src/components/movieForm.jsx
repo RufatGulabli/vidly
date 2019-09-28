@@ -14,6 +14,7 @@ class MovieForm extends Form {
                 _id: '',
                 name: ''
             },
+            imageUrl: '',
             numberInStock: 0,
             dailyRentalRate: 0
         },
@@ -57,6 +58,7 @@ class MovieForm extends Form {
         }),
         numberInStock: Joi.number().integer().required().min(1).label('Stock'),
         dailyRentalRate: Joi.number().required().min(0).max(10).label('Rate'),
+        imageUrl: Joi.string().required().uri().trim().max(128).label('Image URL'),
         publishDate: Joi.optional(),
         like: Joi.optional()
     }
@@ -68,12 +70,16 @@ class MovieForm extends Form {
                 await editMovie(movie);
                 toast.success('Successfully Updated.');
             } else {
-                await saveMovie(movie);
-                toast.success('Successfully Created.');
+                const resp = await saveMovie(movie);
+                if (!resp.error) {
+                    toast.success('Successfully Created.');
+                }
             }
             this.props.history.replace('/movies');
         } catch (exc) {
-            toast.error(exc.response.data.message);
+            if (exc.response && exc.response.data) {
+                toast.error(exc.response.data.message);
+            }
         }
     }
 
@@ -97,6 +103,7 @@ class MovieForm extends Form {
                     {this.renderSelect(genres, 'Genre', data.genre._id || '', this.selectChangeHandler, '_id', 'name', errors)}
                     {this.renderInput('numberInStock', 'Number In Stock', 'number')}
                     {this.renderInput('dailyRentalRate', 'Rate', 'number')}
+                    {this.renderInput('imageUrl', 'Image URL')}
                     {this.state.editForm ? this.renderButton('btn btn-primary', 'Edit') : this.renderButton('btn btn-primary', 'Create')}
                 </form>
             </div>

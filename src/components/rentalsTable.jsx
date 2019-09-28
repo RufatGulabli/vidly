@@ -7,13 +7,13 @@ class RentalsTable extends Component {
     columns = [
         { path: 'dateOut', label: 'Rent Date' },
         { path: 'customer.name', label: 'Customer' },
+        { path: 'customer.email', label: 'Email' },
         { path: 'movie.title', label: 'Movie Title' },
-        { path: 'movie.dailyRentalRate', label: 'Rental Fee' },
         {
             key: 'edit',
             content: rental => {
                 return (<div
-                    style={{ cursor: 'pointer', color: '#d84a4a', padding: '2px 10px' }}
+                    style={{ cursor: 'pointer', color: '#45459a', padding: '2px 10px' }}
                     onClick={() => this.props.showDetails(rental)}>
                     <FontAwesome name="film" size="2x" />
                 </div>)

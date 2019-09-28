@@ -1,20 +1,22 @@
 import React, { Component } from 'react';
+import _ from 'lodash';
+import { Modal, ModalBody, ModalFooter } from 'reactstrap';
 import CustomersTable from './customersTable';
 import customerService from '../services/customerService';
 import SearchBox from './searchbox';
 import Paginator from "./shared/paginator";
 import { pagination } from '../utils/pagination';
-import _ from 'lodash';
 import { toast } from 'react-toastify';
-
 class Customers extends Component {
 
     state = {
         customers: [],
         sortColumn: { path: 'name', order: 'asc' },
         currentPage: 1,
-        pageSize: 4,
-        searchQuery: ''
+        pageSize: 8,
+        searchQuery: '',
+        showModal: false,
+        selectedCustomer: {}
     }
 
     async componentDidMount() {
@@ -51,11 +53,20 @@ class Customers extends Component {
         this.setState({ searchQuery: value, currentPage: 1 });
     }
 
-    deleteCustomer = async customerId => {
+    setSelectedCustomer = customerId => {
+        this.setState(prevState => ({
+            showModal: !prevState.showModal
+        }));
+        const selectedCustomer = this.state.customers.filter(cust => cust._id === customerId)[0];
+        this.setState({ selectedCustomer });
+    }
+
+    deleteCustomer = async () => {
         try {
-            await customerService.deleteCustomer(customerId);
-            const customers = this.state.customers.filter(cust => cust._id !== customerId);
+            await customerService.deleteCustomer(this.state.selectedCustomer._id);
+            const customers = this.state.customers.filter(cust => cust._id !== this.state.selectedCustomer._id);
             this.setState({ customers });
+            this.toggleModal();
             toast.success('Customer deleted successfully');
         } catch (exc) {
             if (exc.response && exc.response.data) {
@@ -68,17 +79,38 @@ class Customers extends Component {
         this.setState({ currentPage: page });
     }
 
+    toggleModal = () => {
+        this.setState(prevState => ({
+            showModal: !prevState.showModal
+        }));
+    }
+
     render() {
-        const { sortColumn, searchQuery, currentPage, pageSize } = this.state;
+        const { sortColumn, searchQuery, currentPage, pageSize, showModal, selectedCustomer } = this.state;
         const { data: customers, totalCount } = this.getPagedData();
+        const style = {
+            boxShadow: '0 2px 9px #ccc',
+            padding: '20px',
+            borderRadius: '6px',
+            backgroundColor: 'white'
+        }
         return (
-            <div className="col">
+            <div className="col mt-3 px-5" style={style}>
+                <Modal centered={true} toggle={this.toggleModal} size='sm' isOpen={showModal} >
+                    <ModalBody>
+                        Are you sure to delete {selectedCustomer.name}?
+                    </ModalBody>
+                    <ModalFooter>
+                        <button onClick={this.deleteCustomer} className="btn btn-success btn-sm w-50">Delete</button>
+                        <button onClick={this.toggleModal} className="btn btn-danger btn-sm w-50">Cancel</button>
+                    </ModalFooter>
+                </Modal>
                 <SearchBox value={searchQuery} onSearch={this.onSearch} placeholder="Search Customer..." />
                 <CustomersTable
                     sortColumn={sortColumn}
                     data={customers}
                     onSort={this.sortHandler}
-                    onDelete={this.deleteCustomer}
+                    onDelete={this.setSelectedCustomer}
                 />
                 <Paginator
                     currentPage={currentPage}

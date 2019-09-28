@@ -1,17 +1,15 @@
 import React from 'react';
-import { Button, Modal, ModalHeader, ModalBody, ModalFooter } from 'reactstrap';
+import { Modal, ModalHeader, ModalBody } from 'reactstrap';
 
-const BootstrapModal = ({ show, toggle, label, className, children }) => {
+const BootstrapModal = ({ show, toggle, label, className, children, size }) => {
 
     return (
         <div>
-            <Modal centered={true} size="md" isOpen={show} toggle={toggle} className={className}>
+            <Modal centered={true} size={size} isOpen={show} toggle={toggle} className={className}>
                 <ModalHeader toggle={toggle}>{label}</ModalHeader>
                 <ModalBody>
                     {children}
                 </ModalBody>
-                <ModalFooter>
-                </ModalFooter>
             </Modal>
         </div>
     );

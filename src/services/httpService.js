@@ -2,7 +2,7 @@ import axios from 'axios';
 import { toast } from 'react-toastify';
 
 const instance = axios.create({
-    baseURL: 'http://localhost:8800/api',
+    baseURL: 'https://thawing-brook-69132.herokuapp.com/api',
     headers: {
         'x-auth-token': localStorage.getItem('token')
     }

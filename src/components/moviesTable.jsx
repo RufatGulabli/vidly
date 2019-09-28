@@ -1,25 +1,30 @@
 import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
-import Like from './shared/like';
+import Rent from './shared/like';
 import Table from './shared/table';
 import loginService from '../services/loginService';
 
 class MoviesTable extends Component {
 
     isAdmin = loginService.getCurrentUser() && loginService.getCurrentUser().isAdmin;
+    logggedIn = loginService.getCurrentUser();
 
     columns = [
         {
             path: 'title',
             label: 'Title',
-            content: movie => (<Link to={`/movies/${movie._id}`}>{movie.title}</Link>)
+            content: movie => {
+                return this.isAdmin ?
+                    (<Link to={`/movies/${movie._id}`}>{movie.title}</Link>)
+                    : (<div>{movie.title}</div>)
+            }
         },
         { path: 'genre.name', label: 'Genre' },
         { path: 'numberInStock', label: 'Stock' },
         { path: 'dailyRentalRate', label: 'Fee' },
         {
             key: 'like',
-            content: movie => <Like like={movie.like} onLike={() => this.props.onLike(movie)} />
+            content: movie => (<Rent like={movie.like} onRent={() => this.props.onRent(movie)} />)
         },
         {
             key: 'delete',
