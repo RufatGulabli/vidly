@@ -1,9 +1,8 @@
 import axios from 'axios';
 import { toast } from 'react-toastify';
-import config from '../config/config.json';
 
 const instance = axios.create({
-    baseURL: config.apiUrl,
+    baseURL: process.env.EndPoint,
     headers: {
         'x-auth-token': localStorage.getItem('token')
     }
