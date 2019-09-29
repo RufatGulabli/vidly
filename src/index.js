@@ -7,8 +7,6 @@ import "bootstrap/dist/css/bootstrap.css";
 import "font-awesome/css/font-awesome.min.css";
 import { BrowserRouter } from 'react-router-dom';
 
-console.log(process.env);
-
 ReactDOM.render(<BrowserRouter><App /></BrowserRouter>, document.getElementById("root"));
 
 // If you want your app to work offline and load faster, you can change
