@@ -24,7 +24,7 @@ class MoviesTable extends Component {
         { path: 'dailyRentalRate', label: 'Fee' },
         {
             key: 'like',
-            content: movie => (<Rent like={movie.like} onRent={() => this.props.onRent(movie)} />)
+            content: movie => (<Rent id={movie._id} title={movie.title} onRent={() => this.props.onRent(movie)} />)
         },
         {
             key: 'delete',

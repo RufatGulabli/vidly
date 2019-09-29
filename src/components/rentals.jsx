@@ -12,7 +12,7 @@ import moment from 'moment';
 class Rentals extends Component {
     state = {
         rentals: [],
-        sortColumn: { path: 'dateOut', order: 'asc' },
+        sortColumn: { path: 'dateOut', order: 'desc' },
         currentPage: 1,
         pageSize: 8,
         searchQuery: '',
